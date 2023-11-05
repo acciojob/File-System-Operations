@@ -1,22 +1,33 @@
 const fs = require('fs');
-const http = require('http');
-const https = require('https');
 
-const urls = process.argv.slice(2);
+const jsonFilePath = process.argv[2];
 
-urls.forEach((url) => {
-  const protocol = url.startsWith('https') ? https : http;
-  const options = { method: 'GET', headers: { 'User-Agent': 'Mozilla/5.0' } };
+fs.readFile(jsonFilePath, 'utf8', (err, data) => {
+  if (err) {
+    console.error(`Error reading file: ${err}`);
+    return;
+  }
 
-  protocol.get(url, options, (res) => {
-    let data = '';
-    res.on('data', (chunk) => {
-      data += chunk;
-    });
-    res.on('end', () => {
-      // TODO: Write the data to a file with the hostname as the filename
-    });
-  }).on('error', (err) => {
-    console.error(`Error downloading ${url}: ${err}`);
+  const users = JSON.parse(data);
+
+  // TODO: Perform the required operations on the users data
+
+  // Print the total number of users
+  console.log(`Total number of users: ${users.length}`);
+
+  // Find the user with the highest score and print their details
+  const highestScoreUser = users.reduce((prev, current) => (prev.score > current.score ? prev : current));
+  console.log('User with the highest score:', highestScoreUser);
+
+  // Sort the users based on their scores in descending order
+  users.sort((a, b) => b.score - a.score);
+
+  // Write the sorted data back to the JSON file
+  fs.writeFile(jsonFilePath, JSON.stringify(users, null, 2), (err) => {
+    if (err) {
+      console.error(`Error writing file: ${err}`);
+      return;
+    }
+    console.log('Data sorted and written back to the JSON file.');
   });
 });
